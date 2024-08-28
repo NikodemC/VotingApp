@@ -17,6 +17,7 @@ public class Program
             app.UseSwaggerUI();
         }
 
+        app.UseCors(builder.Configuration.GetValue<string>("AllowedCorsPolicy")!);
         app.UseHttpsRedirection();
         app.RegisterEndpointDefinitions();
         app.Run();

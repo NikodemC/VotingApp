@@ -13,6 +13,7 @@ namespace VotingApp.Api.Extensions
 
             builder.AddDbContext();
             builder.AddSwagger();
+            builder.AddCorsPolicy();
             builder.Services.AddScoped<ICandidateRepository, CandidateRepository>();
             builder.Services.AddScoped<IVoterRepository, VoterRepository>();
             builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies()));
@@ -30,6 +31,23 @@ namespace VotingApp.Api.Extensions
             {
                 endpoint.RegisterEndpoints(app);
             }
+        }
+
+        private static void AddCorsPolicy(this WebApplicationBuilder builder)
+        {
+            var corsPolicyName = builder.Configuration.GetValue<string>("AllowedCorsPolicy")!;
+            var corsOrigin = builder.Configuration.GetValue<string>("AllowedCorsOrigin")!;
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy(corsPolicyName, policy =>
+                {
+                    policy.WithOrigins(corsOrigin)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
         }
 
         private static void AddDbContext(this WebApplicationBuilder builder)
