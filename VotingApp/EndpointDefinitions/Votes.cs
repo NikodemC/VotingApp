@@ -18,9 +18,9 @@ namespace Api.EndpointDefinitions
         {
             var result = await mediator.Send(new SubmitVote() { VoterId = vote.VoterId, CandidateId = vote.CandidateId });
 
-            return string.IsNullOrEmpty(result.ResponseMessage)
-                ? TypedResults.Ok(result)
-                : TypedResults.NotFound(result.ResponseMessage);
+            return string.IsNullOrEmpty(result)
+                ? TypedResults.Ok()
+                : TypedResults.NotFound(result);
         }
     }
 }

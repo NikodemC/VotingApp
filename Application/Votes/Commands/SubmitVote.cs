@@ -2,7 +2,7 @@
 
 namespace Application.Votes.Commands
 {
-    public class SubmitVote : IRequest<CurrentResult>
+    public class SubmitVote : IRequest<string>
     {
         public int VoterId { get; init; }
 

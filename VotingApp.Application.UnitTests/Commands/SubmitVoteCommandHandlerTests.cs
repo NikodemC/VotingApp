@@ -32,7 +32,7 @@ namespace VotingApp.Application.UnitTests.Commands
             var result = await _handler.Handle(submitVoteCommand, CancellationToken.None);
 
             // Assert
-            result.ResponseMessage.Should().Be("Voter with id 1 not found.");
+            result.Should().Be("Voter with id 1 not found.");
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace VotingApp.Application.UnitTests.Commands
             var result = await _handler.Handle(submitVoteCommand, CancellationToken.None);
 
             // Assert
-            result.ResponseMessage.Should().Be("Voter with id 1 has already voted.");
+            result.Should().Be("Voter with id 1 has already voted.");
         }
 
         [Fact]
@@ -65,23 +65,19 @@ namespace VotingApp.Application.UnitTests.Commands
             var result = await _handler.Handle(submitVoteCommand, CancellationToken.None);
 
             // Assert
-            result.ResponseMessage.Should().Be("Candidate with id 1 not found.");
+            result.Should().Be("Candidate with id 1 not found.");
         }
 
         [Fact]
-        public async Task Handle_ShouldUpdateVoterAndCandidateAndReturnCurrentResult()
+        public async Task Handle_ShouldUpdateVoterAndCandidate()
         {
             // Arrange
             var submitVoteCommand = new SubmitVote { VoterId = 1, CandidateId = 1 };
             var existingVoter = new Voter { Name = "John Doe", HasVoted = false };
             var existingCandidate = new Candidate { Id = 1, Name = "John Doe", Votes = 0 };
-            var allVoters = new List<Voter> { existingVoter };
-            var allCandidates = new List<Candidate> { existingCandidate };
 
             _voterRepository.GetVoterById(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(existingVoter);
             _candidateRepository.GetCandidateById(Arg.Any<int>(), Arg.Any<CancellationToken>()).Returns(existingCandidate);
-            _voterRepository.GetAllVoters(Arg.Any<CancellationToken>()).Returns(allVoters);
-            _candidateRepository.GetAllCandidates(Arg.Any<CancellationToken>()).Returns(allCandidates);
 
             // Act
             var result = await _handler.Handle(submitVoteCommand, CancellationToken.None);
@@ -90,9 +86,7 @@ namespace VotingApp.Application.UnitTests.Commands
             await _voterRepository.Received(1).MarkAsVoted(submitVoteCommand.VoterId, Arg.Any<CancellationToken>());
             await _candidateRepository.Received(1).IncreaseCandidateVoteCount(submitVoteCommand.CandidateId, Arg.Any<CancellationToken>());
 
-            result.Voters.Should().BeEquivalentTo(allVoters);
-            result.Candidates.Should().BeEquivalentTo(allCandidates);
-            result.ResponseMessage.Should().BeNull();
+            result.Should().Be(string.Empty);
         }
     }
 }

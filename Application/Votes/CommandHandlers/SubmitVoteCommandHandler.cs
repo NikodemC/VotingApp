@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Application.Votes.CommandHandlers
 {
-    public class SubmitVoteCommandHandler : IRequestHandler<SubmitVote, CurrentResult>
+    public class SubmitVoteCommandHandler : IRequestHandler<SubmitVote, string>
     {
         private readonly IVoterRepository _voterRepository;
         private readonly ICandidateRepository _candidateRepository;
@@ -15,41 +15,29 @@ namespace Application.Votes.CommandHandlers
             _candidateRepository = candidateRepository;
         }
 
-        public async Task<CurrentResult> Handle(SubmitVote request, CancellationToken cancellationToken)
+        public async Task<string> Handle(SubmitVote request, CancellationToken cancellationToken)
         {
-            if (request is null)
-                throw new ArgumentNullException(nameof(request));
-
             var voter = await _voterRepository.GetVoterById(request.VoterId, cancellationToken);
             if (voter is null)
             {
-                return CreateErrorResponse($"Voter with id {request.VoterId} not found.");
+                return $"Voter with id {request.VoterId} not found.";
             }
 
             if (voter.HasVoted)
             {
-                return CreateErrorResponse($"Voter with id {request.VoterId} has already voted.");
+                return $"Voter with id {request.VoterId} has already voted.";
             }
 
             var candidate = await _candidateRepository.GetCandidateById(request.CandidateId, cancellationToken);
             if (candidate is null)
             {
-                return CreateErrorResponse($"Candidate with id {request.CandidateId} not found.");
+                return $"Candidate with id {request.CandidateId} not found.";
             }
 
             await _voterRepository.MarkAsVoted(request.VoterId, cancellationToken);
             await _candidateRepository.IncreaseCandidateVoteCount(request.CandidateId, cancellationToken);
 
-            return await CreateCurrentResult(cancellationToken);
+            return string.Empty;
         }
-
-        private static CurrentResult CreateErrorResponse(string message) => new CurrentResult { ResponseMessage = message };
-
-        private async Task<CurrentResult> CreateCurrentResult(CancellationToken cancellationToken) 
-            => new CurrentResult
-            {
-                Voters = await _voterRepository.GetAllVoters(cancellationToken),
-                Candidates = await _candidateRepository.GetAllCandidates(cancellationToken)
-            };
     }
 }

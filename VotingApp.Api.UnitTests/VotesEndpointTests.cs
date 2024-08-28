@@ -1,7 +1,6 @@
 ﻿using Api.Dtos;
 using Application.Votes;
 using Application.Votes.Commands;
-using Domain;
 using FluentAssertions;
 using MediatR;
 using Microsoft.AspNetCore.TestHost;
@@ -35,9 +34,7 @@ namespace VotingApp.Api.UnitTests
         public async Task SubmitVote_ValidVoterId_And_ValidCandidateId_ReturnsOk()
         {
             // Arrange
-            var voter = new Voter() { Name = "VoterName" };
-            var candidate = new Candidate { Name = "CandidateName" };
-            _mediator.Send(Arg.Any<SubmitVote>()).Returns(new CurrentResult { Voters = new List<Voter>() { voter }, Candidates = new List<Candidate>() { candidate } });
+            _mediator.Send(Arg.Any<SubmitVote>()).Returns(string.Empty);
             var client = CreateClientWithMediator();
 
             // Act
@@ -45,19 +42,13 @@ namespace VotingApp.Api.UnitTests
 
             // Assert
             response.StatusCode.Should().Be(HttpStatusCode.OK);
-            var result = await response.Content.ReadFromJsonAsync<CurrentResult>();
-
-            result.Should().NotBeNull();
-            result.ResponseMessage.Should().BeNull();
-            result.Voters.First().Name.Should().Be(voter.Name);
-            result.Candidates.First().Name.Should().Be(candidate.Name);
         }
 
         [Fact]
         public async Task SubmitVote_InvalidId_ReturnsNotFound()
         {
             // Arrange
-            _mediator.Send(Arg.Any<SubmitVote>()).Returns(new CurrentResult { ResponseMessage = "Voter with id 1 not found." });
+            _mediator.Send(Arg.Any<SubmitVote>()).Returns("Voter with id 1 not found.");
             var client = CreateClientWithMediator();
 
             // Act
